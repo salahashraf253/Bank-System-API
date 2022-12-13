@@ -17,7 +17,9 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .catch((err) => { console.log(err); });   
 
 const app=express();
-app.listen(3000,()=>{console.log("server started")});
+const port = process.env.portNumber || 3000;
+
+app.listen(port,()=>{console.log("server started")});
 app.use(express.static('public'));
 app.use(morgan('dev'));
 app.use(bodyParser.json());
