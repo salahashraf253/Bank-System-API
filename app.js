@@ -27,6 +27,10 @@ app.use(bodyParser.json());
 //   next();
 // });
 
+app.get("/",(req,res)=>{
+    res.send("Hello World");
+});
+
 //add user to db
 app.post('/add-user',(req,res)=>{
     // const user=new User({
