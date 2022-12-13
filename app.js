@@ -37,15 +37,8 @@ app.get("/",(req,res)=>{
 
 //add user to db
 app.post('/add-user',(req,res)=>{
-    // const user=new User({
-    //     SSN:2,
-    //     FullName:"Yasser",
-    //     Email:"Yasser@gmail.com",
-    //     Password:"123456",
-    //     // Accounts:[account]
-    // });
    let user=new User(req.body);
-   console.log("user" , user);
+//    console.log("user" , user);
     // const user=User();
     user.save()
         .then((result)=>{
@@ -66,18 +59,7 @@ app.post("/all-users",(req,res)=>{
         });
 });
 
-// function getUser(ssn){
-//     console.log("hello in get user")
-//     User.find({SSN:ssn})
-//     .then((result)=>{
-//         console.log("Result");
-//         console.log(result);
-//         return result;
-//     })
-//     .catch((err)=>{
-//         console.log("Error: "+err);
-//     });
-// }
+
 //get user by ssn
 app.post("/user",(req,res)=>{
     User.find({SSN:req.body.SSN})
@@ -87,20 +69,8 @@ app.post("/user",(req,res)=>{
         .catch((err)=>{
             console.log("Error: "+err);
         });
-});
-async function updateData(){ 
-    const newUser={
-        SSN:123456789,
-        FullName:"Salah Ashraf",
-        Email:"abced@gmail.com",
-        Password:"123456"
-    }
-    User.update({SSN:123456789},{$set: newUser}).then((result)=>{
-        console.log(result);
-    }).catch((err)=>{
-        console.log(err);
-    }); 
-}
+})
+
 //get account for user 
 app.post("/add-account",(req,res)=>{
     User.findOne({SSN:req.body.SSN})
@@ -120,6 +90,32 @@ app.post("/add-account",(req,res)=>{
     .catch((err)=>{
         console.log("Error: "+err);
     });
+
+});
+
+app.post('/login',(req,res)=>{
+    const email=req.body.Email;
+    const password=req.body.Password;
+    try {
+        User.findOne({ Email: email ,Password:password})
+        .then((result)=>{
+           if(result) {
+            res.status(200).json({User: result });
+           }
+           else {
+            res.status(401).send("User not found");
+           }
+        })
+    } 
+    catch (err) {
+        console.log(err);
+    }
+
+});
+
+app.delete("/delete-account",(req,res)=>{
+    const ssn=req.body.SSN;
+    //Todo delete account from user
 
 });
 //not found page
