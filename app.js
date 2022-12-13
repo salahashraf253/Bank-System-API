@@ -9,12 +9,13 @@ const morgan=require("morgan");
 // const { accountSchema } = require("./model/account.js");
 const User=require("./model/user.js").User;
 const Account=require("./model/account.js").accountSchema;
-const credentials=require("./FileReader.js");
+require('dotenv').config();
 
-const dbURI="mongodb+srv://" + credentials[0] + ":" +credentials[1] + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
+const dbURI="mongodb+srv://" + process.env.dbUserame + ":" + process.env.dbPassword + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result) => { console.log("connected to db"); })
     .catch((err) => { console.log(err); });   
+
 const app=express();
 app.listen(3000,()=>{console.log("server started")});
 app.use(express.static('public'));
@@ -65,6 +66,11 @@ app.post("/user",(req,res)=>{
         .catch((err)=>{
             console.log("Error: "+err);
         });
+});
+//get user by ssn
+app.post("/add-account",(req,res)=>{
+    account=req.body;
+
 });
 //not found page
 app.use((req, res) => {
