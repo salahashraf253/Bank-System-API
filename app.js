@@ -64,7 +64,10 @@ app.post("/all-users",(req,res)=>{
 app.post("/user",(req,res)=>{
     User.find({SSN:req.body.SSN})
         .then((result)=>{
-            res.send(result);
+            if(result){
+                res.status(200).send(result);
+            }
+            else res.status(404);
         })
         .catch((err)=>{
             console.log("Error: "+err);
@@ -75,17 +78,20 @@ app.post("/user",(req,res)=>{
 app.post("/add-account",(req,res)=>{
     User.findOne({SSN:req.body.SSN})
     .then((result)=>{
-        let userAccounts=result.Accounts;
-        const updateDocument={
-            SSN:req.body.SSN,
-            Accounts:[...userAccounts,req.body.Accounts]
-        }    
-        User.update({SSN:req.body.SSN},{$set: updateDocument}).then((result)=>{
-            res.send(result);
-            // console.log(result);
-        }).catch((err)=>{
-            console.log(err);
-        });
+        if(result){
+            let userAccounts=result.Accounts;
+            const updatedUser={
+                SSN:req.body.SSN,
+                Accounts:[...userAccounts,req.body.Accounts]
+            }    
+            User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
+                res.send(result);
+                // console.log(result);
+            }).catch((err)=>{
+                console.log(err);
+            });
+        }
+        else res.status(404);
     })
     .catch((err)=>{
         console.log("Error: "+err);
