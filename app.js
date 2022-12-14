@@ -8,9 +8,11 @@ const model=mongoose.model;
 const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
+const { result } = require("lodash");
+const { accountSchema } = require("./model/account.js");
 // const { accountSchema } = require("./model/account.js");
 const User=require("./model/user.js").User;
-const Account=require("./model/account.js").accountSchema;
+const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
 
 const dbURI="mongodb+srv://" + process.env.dbUserame + ":" + process.env.dbPassword + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
@@ -26,10 +28,6 @@ app.use(express.static('public'));
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 
-// app.use((req, res, next) => {
-//   res.locals.path = req.path;
-//   next();
-// });
 
 app.get("/",(req,res)=>{
     res.send("Hello world")
@@ -38,8 +36,6 @@ app.get("/",(req,res)=>{
 //add user to db
 app.post('/add-user',(req,res)=>{
    let user=new User(req.body);
-//    console.log("user" , user);
-    // const user=User();
     user.save()
         .then((result)=>{
             res.send(result);
@@ -86,7 +82,6 @@ app.post("/add-account",(req,res)=>{
             }    
             User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
                 res.send(result);
-                // console.log(result);
             }).catch((err)=>{
                 console.log(err);
             });
@@ -98,7 +93,6 @@ app.post("/add-account",(req,res)=>{
     });
 
 });
-
 app.post('/login',(req,res)=>{
     const email=req.body.Email;
     const password=req.body.Password;
@@ -118,7 +112,45 @@ app.post('/login',(req,res)=>{
     }
 
 });
-
+function getUpdatedAccountWithTransaction(accountToUpdate,transactionToAdd){
+    const modelAccount=model("modelAccount",accountSchema);
+    let acc=new modelAccount(accountToUpdate);
+    acc.Transactions.addToSet(transactionToAdd);
+    return acc;
+}
+function updateAccountsList(allUserAccounts, transactionToAdd,accountType){
+    for(var i=0;i<allUserAccounts.length;i++){
+        if(allUserAccounts[i].Type==accountType){
+            allUserAccounts[i]=getUpdatedAccountWithTransaction(allUserAccounts[i],transactionToAdd);
+            return allUserAccounts;
+        }
+    }
+}
+//add transaction for a account
+app.post('/add-transaction',(req,res)=>{
+    const ssn=req.body.SSN;
+    const accountType=req.body.accountType;
+    const transactionToAdd=req.body.Transactions;
+    try {
+        const filter={SSN:ssn};
+        User.findOne( filter)
+        .then((result)=>{
+            let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
+            const updatedUser={
+                SSN:req.body.SSN,
+                Accounts:allUserAccounts
+            }  
+            User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
+                res.send(result);
+            }).catch((err)=>{
+                console.log(err);
+            });
+        })
+    } 
+    catch (err) {
+        console.log(err);
+    }
+}); 
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
     //Todo delete account from user
