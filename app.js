@@ -48,7 +48,7 @@ app.post('/add-user',(req,res)=>{
 app.get("/all-users",(req,res)=>{
     User.find()
         .then((result)=>{
-            res.send(result);
+            res.json(result);
         })
         .catch((err)=>{
             console.log("Error: "+err);
