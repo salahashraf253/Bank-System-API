@@ -24,6 +24,7 @@
     "mongose": "^0.0.2-security",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.20",
+    "prettier": "^2.8.1",
     "uuid": "^9.0.0"
   }
 }
