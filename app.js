@@ -135,16 +135,21 @@ app.post('/add-transaction',(req,res)=>{
         const filter={SSN:ssn};
         User.findOne( filter)
         .then((result)=>{
-            let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
-            const updatedUser={
-                SSN:req.body.SSN,
-                Accounts:allUserAccounts
-            }  
-            User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
-                res.send(result);
-            }).catch((err)=>{
-                console.log(err);
-            });
+            if(result){
+                let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
+                const updatedUser={
+                    SSN:req.body.SSN,
+                    Accounts:allUserAccounts
+                }  
+                User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
+                    res.send(result);
+                }).catch((err)=>{
+                    console.log(err);
+                });
+            }
+            else{
+                res.status(404).send("Account or User is not found");
+            }
         })
     } 
     catch (err) {
