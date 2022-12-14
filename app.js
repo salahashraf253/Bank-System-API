@@ -45,7 +45,7 @@ app.post('/add-user',(req,res)=>{
         });
 });
 //get all users
-app.post("/all-users",(req,res)=>{
+app.get("/all-users",(req,res)=>{
     User.find()
         .then((result)=>{
             res.send(result);
@@ -156,6 +156,7 @@ app.post('/add-transaction',(req,res)=>{
         console.log(err);
     }
 }); 
+
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
     //Todo delete account from user
