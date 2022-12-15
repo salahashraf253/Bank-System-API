@@ -100,7 +100,8 @@ app.post('/login',(req,res)=>{
         User.findOne({ Email: email ,Password:password})
         .then((result)=>{
            if(result) {
-            res.status(200).json({User: result });
+            const userToSend=new User(result);
+            res.status(200).send(JSON.stringify(userToSend));
            }
            else {
             res.status(401).send("User not found");
