@@ -101,7 +101,8 @@ app.post('/login',(req,res)=>{
         .then((result)=>{
            if(result) {
             const userToSend=new User(result);
-            res.status(200).send(JSON.stringify(userToSend));
+            //res.status(200).send(result);
+            res.status(200).send({"name":"motaz"});
            }
            else {
             res.status(401).send("User not found");
