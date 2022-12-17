@@ -78,7 +78,7 @@ app.post("/add-account/:userSSN",(req,res)=>{
         if(result){
             let userAccounts=result.Accounts;
             const modelAccount=model("modelAccount",accountSchema);
-            const accountToAdd=new modelAccount(req.body.Account);
+            const accountToAdd=new modelAccount(req.body);
             console.log("Account");
             console.log(accountToAdd);
             let updatedUser;
