@@ -162,7 +162,61 @@ app.post('/add-transaction',(req,res)=>{
         console.log(err);
     }
 }); 
-
+function getUpdataUserWithNewBalance(user,accountId,newBalance){
+    for(var i=0;i<user.Accounts.length;i++){
+        if(user.Accounts[i]._id==accountId){
+            user.Accounts[i].Balance=newBalance;
+            return user;
+        }
+    }
+}
+//update balance
+app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
+    try{
+        const accountId=req.params.accountID;
+        const userSSN=req.params.userSSN;
+        const filter={SSN: userSSN};    
+        console.log(userSSN,accountId);
+        User.findOne(filter)
+        .then((result)=>{
+            if(result){
+                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
+                User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
+                    res.status(200).send("Done");
+                }).catch((err)=>{
+                    console.log(err);
+                });
+            }
+            else{
+                res.status(404).send("Account or User is not found");
+            }
+        })
+    }
+    catch(err){
+        console.log(err);
+    }
+});
+app.get("/isValid/AccountNo/:accountID",(req,res)=>{
+    const accountID=req.params.accountID;
+    console.log("AccountId is : ",accountID);
+    User.find()
+    .then((result)=>{
+        console.log(result);
+        for(var i=0;i<result.length;i++){
+            console.log(result.Email);
+            for(var j=0;j<result[i].Accounts.length;j++){
+                if(result[i].Accounts[j]._id==accountID){
+                    res.status(200).send("Found");
+                }
+            }
+        }
+        res.status(401).send("account id is not found")
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+});
+//delete account
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
     //Todo delete account from user
