@@ -76,14 +76,17 @@ app.post("/add-account/:userSSN",(req,res)=>{
             let userAccounts=result.Accounts;
             const modelAccount=model("modelAccount",accountSchema);
             const accountToAdd=new modelAccount(req.body.Account);
-            console.log(accountToAdd);
+            // console.log(accountToAdd);
             const updatedUser={
                 SSN:req.body.SSN,
                 Accounts:[...userAccounts,accountToAdd]
             }    
-            console.log(updatedUser.Accounts);
-            User.updateOne(filter,{$set: updatedUser}).then((result)=>{
-                res.status(200).send(JSON   .stringify(result));
+            // console.log(updatedUser.Accounts);
+            User.updateOne(filter,{$set: updatedUser})
+            .then((result)=>{
+                const userToSend=new User(updatedUser);
+                console.log(userToSend);
+                res.status(200).send(JSON.stringify(userToSend));
             }).catch((err)=>{
                 console.log(err);
             });
