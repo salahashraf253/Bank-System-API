@@ -170,13 +170,14 @@ function getUpdataUserWithNewBalance(user,accountId,newBalance){
 app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
     const accountId=req.params.accountID;
     const userSSN=req.params.userSSN;
-    const filter={SSN: userSSN};
+    const filter={SSN: userSSN};    
+    console.log(userSSN,accountId);
     User.findOne(filter)
     .then((result)=>{
         if(result){
             let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
             User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
-                res.send(result);
+                res.status(200).send("Done");
             }).catch((err)=>{
                 console.log(err);
             });
