@@ -1,19 +1,13 @@
-const fs=require("fs/promises");
 const express=require("express");
-const cors=require("cors");
 const _=require("lodash");
-const { v4: uuidv4 } = require('uuid');
 const mongoose=require("mongoose");
 const model=mongoose.model;
 const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
-const { result } = require("lodash");
 const { accountSchema } = require("./model/account.js");
 const { json } = require("body-parser");
-// const { accountSchema } = require("./model/account.js");
 const User=require("./model/user.js").User;
-const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
 
 const dbURI="mongodb+srv://" + process.env.dbUserame + ":" + process.env.dbPassword + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
@@ -133,7 +127,6 @@ app.post('/add-transaction',(req,res)=>{
     const ssn=req.body.SSN;
     const accountType=req.body.accountType;
     const transactionToAdd=req.body.Transactions;
-    const newBalance= req.body.Balance;
     try {
         const filter={SSN:ssn};
         User.findOne( filter)
@@ -168,24 +161,29 @@ function getUpdataUserWithNewBalance(user,accountId,newBalance){
     }
 }
 app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
-    const accountId=req.params.accountID;
-    const userSSN=req.params.userSSN;
-    const filter={SSN: userSSN};    
-    console.log(userSSN,accountId);
-    User.findOne(filter)
-    .then((result)=>{
-        if(result){
-            let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
-            User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
-                res.status(200).send("Done");
-            }).catch((err)=>{
-                console.log(err);
-            });
-        }
-        else{
-            req.status(404).send("User not found");
-        }
-    })
+    try{
+        const accountId=req.params.accountID;
+        const userSSN=req.params.userSSN;
+        const filter={SSN: userSSN};    
+        console.log(userSSN,accountId);
+        User.findOne(filter)
+        .then((result)=>{
+            if(result){
+                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
+                User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
+                    res.status(200).send("Done");
+                }).catch((err)=>{
+                    console.log(err);
+                });
+            }
+            else{
+                res.status(404).send("Account or User is not found");
+            }
+        })
+    }
+    catch(err){
+        console.log(err);
+    }
 });
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
