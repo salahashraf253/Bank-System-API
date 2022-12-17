@@ -57,8 +57,8 @@ app.get("/all-users",(req,res)=>{
 
 
 //get user by ssn
-app.post("/user",(req,res)=>{
-    User.find({SSN:req.body.SSN})
+app.get("/user/:ssn",(req,res)=>{
+    User.find({SSN:req.params.ssn})
         .then((result)=>{
             if(result){
                 res.status(200).send(result);
