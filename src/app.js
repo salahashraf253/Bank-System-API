@@ -198,15 +198,13 @@ app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
 });
 app.get("/isValid/AccountNo/:accountID",(req,res)=>{
     const accountID=req.params.accountID;
-    console.log("AccountId is : ",accountID);
     User.find()
     .then((result)=>{
-        console.log(result);
         for(var i=0;i<result.length;i++){
-            console.log(result.Email);
             for(var j=0;j<result[i].Accounts.length;j++){
                 if(result[i].Accounts[j]._id==accountID){
                     res.status(200).send("Found");
+                    return;
                 }
             }
         }
