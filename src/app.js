@@ -69,7 +69,10 @@ app.post("/user",(req,res)=>{
 app.post("/add-account/:userSSN",(req,res)=>{
     const ssn=req.params.userSSN;
     const filter={SSN:ssn};
-    // console.log(req.body.Account);
+    console.log("Request");
+    console.log(req.body);
+    console.log('REquest body. Account');
+    console.log(req.body.Account);
     User.findOne(filter)
     .then((result)=>{
         if(result){
