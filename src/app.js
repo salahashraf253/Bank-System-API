@@ -1,13 +1,18 @@
+const fs=require("fs/promises");
 const express=require("express");
+const cors=require("cors");
 const _=require("lodash");
+const { v4: uuidv4 } = require('uuid');
 const mongoose=require("mongoose");
 const model=mongoose.model;
 const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
+const { result } = require("lodash");
 const { accountSchema } = require("./model/account.js");
-const { json } = require("body-parser");
+// const { accountSchema } = require("./model/account.js");
 const User=require("./model/user.js").User;
+const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
 
 const dbURI="mongodb+srv://" + process.env.dbUserame + ":" + process.env.dbPassword + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
@@ -68,43 +73,25 @@ app.post("/user",(req,res)=>{
 //get account for user 
 app.post("/add-account/:userSSN",(req,res)=>{
     const ssn=req.params.userSSN;
-    const filter={SSN:ssn};
-    console.log("Request");
-    console.log(req.body);
-    console.log('REquest body. Account');
-    console.log(req.body.Account);
+    const accountModel=model("account",accountSchema);
+    let accountToAdd=new accountModel(req.body);
+    const filter={SSN: ssn};
+
     User.findOne(filter)
     .then((result)=>{
         if(result){
             let userAccounts=result.Accounts;
-            const modelAccount=model("modelAccount",accountSchema);
-            const accountToAdd=new modelAccount(req.body);
-            console.log("Account");
-            console.log(accountToAdd);
-            let updatedUser;
-            if(result.Accounts==null){
-                updatedUser={
-                    SSN:ssn,
-                    Accounts:[accountToAdd]
-                }
-            }   
-            else{
-                updatedUser={
-                    SSN:ssn,
-                    Accounts:[...userAccounts,accountToAdd]
-                } 
-            }
-            // console.log(updatedUser);
-            User.updateOne(filter,{$set: updatedUser})
-            .then((result)=>{
-                const userToSend=new User(updatedUser);
-                // console.log(userToSend);
-                res.status(200).send(JSON.stringify(userToSend));
+            const updatedUser={
+                SSN:ssn,
+                Accounts:[...userAccounts,accountToAdd]
+            }    
+            User.updateOne(filter,{$set: updatedUser}).then((result)=>{
+                res.send(result);
             }).catch((err)=>{
                 console.log(err);
             });
         }
-        else res.status(404);
+        else res.status(404).send("User is not Found");
     })
     .catch((err)=>{
         console.log("Error: "+err);
@@ -160,7 +147,7 @@ app.post('/add-transaction',(req,res)=>{
                     SSN:req.body.SSN,
                     Accounts:allUserAccounts
                 }  
-                User.update(filter,{$set: updatedUser}).then((result)=>{
+                User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
                     res.send(result);
                 }).catch((err)=>{
                     console.log(err);
@@ -175,39 +162,7 @@ app.post('/add-transaction',(req,res)=>{
         console.log(err);
     }
 }); 
-function getUpdataUserWithNewBalance(user,accountId,newBalance){
-    for(var i=0;i<user.Accounts.length;i++){
-        if(user.Accounts[i]._id==accountId){
-            user.Accounts[i].Balance=newBalance;
-            return user;
-        }
-    }
-}
-app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
-    try{
-        const accountId=req.params.accountID;
-        const userSSN=req.params.userSSN;
-        const filter={SSN: userSSN};    
-        console.log(userSSN,accountId);
-        User.findOne(filter)
-        .then((result)=>{
-            if(result){
-                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
-                User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
-                    res.status(200).send("Done");
-                }).catch((err)=>{
-                    console.log(err);
-                });
-            }
-            else{
-                res.status(404).send("Account or User is not found");
-            }
-        })
-    }
-    catch(err){
-        console.log(err);
-    }
-});
+
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
     //Todo delete account from user
@@ -215,5 +170,5 @@ app.delete("/delete-account",(req,res)=>{
 });
 //not found page
 app.use((req, res) => {
-    res.status(404).send("404 Not Found");
+    res.status(404).send("404 Not Found Path");
 });
