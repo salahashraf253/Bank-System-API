@@ -76,16 +76,26 @@ app.post("/add-account/:userSSN",(req,res)=>{
             let userAccounts=result.Accounts;
             const modelAccount=model("modelAccount",accountSchema);
             const accountToAdd=new modelAccount(req.body.Account);
-            // console.log(accountToAdd);
-            const updatedUser={
-                SSN:req.body.SSN,
-                Accounts:[...userAccounts,accountToAdd]
-            }    
-            // console.log(updatedUser.Accounts);
+            console.log("Account");
+            console.log(accountToAdd);
+            let updatedUser;
+            if(result.Accounts==null){
+                updatedUser={
+                    SSN:ssn,
+                    Accounts:[accountToAdd]
+                }
+            }   
+            else{
+                updatedUser={
+                    SSN:ssn,
+                    Accounts:[...userAccounts,accountToAdd]
+                } 
+            }
+            // console.log(updatedUser);
             User.updateOne(filter,{$set: updatedUser})
             .then((result)=>{
                 const userToSend=new User(updatedUser);
-                console.log(userToSend);
+                // console.log(userToSend);
                 res.status(200).send(JSON.stringify(userToSend));
             }).catch((err)=>{
                 console.log(err);
