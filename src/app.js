@@ -76,7 +76,7 @@ app.post("/add-account",(req,res)=>{
                 Accounts:[...userAccounts,req.body.Accounts]
             }    
             User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
-                res.status(200).send(json.stringify(result));
+                res.status(200).send(JSON.stringify(result));
             }).catch((err)=>{
                 console.log(err);
             });
