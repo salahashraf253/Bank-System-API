@@ -26,7 +26,14 @@ const userSchema=new Schema({
         type:[accountSchema],
         required:false
     },
-    Gender:String,
+    Gender:{
+        type:String,
+        required:false
+    },
+    Address:{
+        type:String,
+        required:false
+    },
     DateOfBirth:{
         type:Date,
         required:false
