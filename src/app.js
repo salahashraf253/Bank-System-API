@@ -66,17 +66,23 @@ app.post("/user",(req,res)=>{
 })
 
 //get account for user 
-app.post("/add-account",(req,res)=>{
-    User.findOne({SSN:req.body.SSN})
+app.post("/add-account/:userSSN",(req,res)=>{
+    const ssn=req.params.userSSN;
+    const filter={SSN:ssn};
+    console.log(req.body.Account);
+    User.findOne(filter)
     .then((result)=>{
         if(result){
             let userAccounts=result.Accounts;
+            const modelAccount=model("modelAccount",accountSchema);
+            const accountToAdd=new modelAccount(req.body.Account)
             const updatedUser={
                 SSN:req.body.SSN,
-                Accounts:[...userAccounts,req.body.Accounts]
+                Accounts:[...userAccounts,accountToAdd]
             }    
-            User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
-                res.status(200).send(JSON.stringify(result));
+            console.log(updatedUser.Accounts);
+            User.update(filter,{$set: updatedUser}).then((result)=>{
+                res.status(200).send(JSON   .stringify(result));
             }).catch((err)=>{
                 console.log(err);
             });
