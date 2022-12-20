@@ -1,3 +1,4 @@
+const fs=require("fs/promises");
 const express=require("express");
 const _=require("lodash");
 const mongoose=require("mongoose");
@@ -6,8 +7,8 @@ const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
 const { accountSchema } = require("./model/account.js");
-const { json } = require("body-parser");
 const User=require("./model/user.js").User;
+const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
 
 const dbURI="mongodb+srv://" + process.env.dbUserame + ":" + process.env.dbPassword + "@users.jeljdqg.mongodb.net/?retryWrites=true&w=majority";
@@ -52,8 +53,8 @@ app.get("/all-users",(req,res)=>{
 
 
 //get user by ssn
-app.post("/user",(req,res)=>{
-    User.find({SSN:req.body.SSN})
+app.get("/user/:ssn",(req,res)=>{
+    User.find({SSN:req.params.ssn})
         .then((result)=>{
             if(result){
                 res.status(200).send(result);
@@ -68,43 +69,25 @@ app.post("/user",(req,res)=>{
 //get account for user 
 app.post("/add-account/:userSSN",(req,res)=>{
     const ssn=req.params.userSSN;
-    const filter={SSN:ssn};
-    console.log("Request");
-    console.log(req.body);
-    console.log('REquest body. Account');
-    console.log(req.body.Account);
+    const accountModel=model("account",accountSchema);
+    let accountToAdd=new accountModel(req.body);
+    const filter={SSN: ssn};
+
     User.findOne(filter)
     .then((result)=>{
         if(result){
             let userAccounts=result.Accounts;
-            const modelAccount=model("modelAccount",accountSchema);
-            const accountToAdd=new modelAccount(req.body);
-            console.log("Account");
-            console.log(accountToAdd);
-            let updatedUser;
-            if(result.Accounts==null){
-                updatedUser={
-                    SSN:ssn,
-                    Accounts:[accountToAdd]
-                }
-            }   
-            else{
-                updatedUser={
-                    SSN:ssn,
-                    Accounts:[...userAccounts,accountToAdd]
-                } 
-            }
-            // console.log(updatedUser);
-            User.updateOne(filter,{$set: updatedUser})
-            .then((result)=>{
-                const userToSend=new User(updatedUser);
-                // console.log(userToSend);
-                res.status(200).send(JSON.stringify(userToSend));
+            const updatedUser={
+                SSN:ssn,
+                Accounts:[...userAccounts,accountToAdd]
+            }    
+            User.updateOne(filter,{$set: updatedUser}).then((result)=>{
+                res.send(result);
             }).catch((err)=>{
                 console.log(err);
             });
         }
-        else res.status(404);
+        else res.status(404).send("User is not Found");
     })
     .catch((err)=>{
         console.log("Error: "+err);
@@ -146,10 +129,11 @@ function updateAccountsList(allUserAccounts, transactionToAdd,accountType){
     }
 }
 //add transaction for a account
-app.post('/add-transaction',(req,res)=>{
-    const ssn=req.body.SSN;
-    const accountType=req.body.accountType;
-    const transactionToAdd=req.body.Transactions;
+app.post('/add-transaction/:userSSN/:accountType',(req,res)=>{
+    const ssn=req.params.userSSN;
+    const accountType=req.params.accountType;
+    // const transactionModel=model("transactionModel",Transaction);
+    const transactionToAdd=req.body;
     try {
         const filter={SSN:ssn};
         User.findOne( filter)
@@ -157,10 +141,10 @@ app.post('/add-transaction',(req,res)=>{
             if(result){
                 let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
                 const updatedUser={
-                    SSN:req.body.SSN,
+                    SSN:ssn,
                     Accounts:allUserAccounts
                 }  
-                User.update(filter,{$set: updatedUser}).then((result)=>{
+                User.updateOne(filter,{$set: updatedUser}).then((result)=>{
                     res.send(result);
                 }).catch((err)=>{
                     console.log(err);
@@ -183,6 +167,7 @@ function getUpdataUserWithNewBalance(user,accountId,newBalance){
         }
     }
 }
+//update balance
 app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
     try{
         const accountId=req.params.accountID;
@@ -208,6 +193,25 @@ app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
         console.log(err);
     }
 });
+app.get("/isValid/AccountNo/:accountID",(req,res)=>{
+    const accountID=req.params.accountID;
+    User.find()
+    .then((result)=>{
+        for(var i=0;i<result.length;i++){
+            for(var j=0;j<result[i].Accounts.length;j++){
+                if(result[i].Accounts[j]._id==accountID){
+                    res.status(200).send("Found");
+                    return;
+                }
+            }
+        }
+        res.status(401).send("account id is not found")
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+});
+//delete account
 app.delete("/delete-account",(req,res)=>{
     const ssn=req.body.SSN;
     //Todo delete account from user
@@ -215,5 +219,5 @@ app.delete("/delete-account",(req,res)=>{
 });
 //not found page
 app.use((req, res) => {
-    res.status(404).send("404 Not Found");
+    res.status(404).send("404 Not Found Path");
 });
