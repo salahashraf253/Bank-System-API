@@ -1,16 +1,12 @@
 const fs=require("fs/promises");
 const express=require("express");
-const cors=require("cors");
 const _=require("lodash");
-const { v4: uuidv4 } = require('uuid');
 const mongoose=require("mongoose");
 const model=mongoose.model;
 const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
-const { result } = require("lodash");
 const { accountSchema } = require("./model/account.js");
-// const { accountSchema } = require("./model/account.js");
 const User=require("./model/user.js").User;
 const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
@@ -133,10 +129,11 @@ function updateAccountsList(allUserAccounts, transactionToAdd,accountType){
     }
 }
 //add transaction for a account
-app.post('/add-transaction',(req,res)=>{
-    const ssn=req.body.SSN;
-    const accountType=req.body.accountType;
-    const transactionToAdd=req.body.Transactions;
+app.post('/add-transaction/:userSSN/:accountType',(req,res)=>{
+    const ssn=req.params.userSSN;
+    const accountType=req.params.accountType;
+    // const transactionModel=model("transactionModel",Transaction);
+    const transactionToAdd=req.body;
     try {
         const filter={SSN:ssn};
         User.findOne( filter)
@@ -144,10 +141,10 @@ app.post('/add-transaction',(req,res)=>{
             if(result){
                 let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
                 const updatedUser={
-                    SSN:req.body.SSN,
+                    SSN:ssn,
                     Accounts:allUserAccounts
                 }  
-                User.update({SSN:req.body.SSN},{$set: updatedUser}).then((result)=>{
+                User.updateOne(filter,{$set: updatedUser}).then((result)=>{
                     res.send(result);
                 }).catch((err)=>{
                     console.log(err);
