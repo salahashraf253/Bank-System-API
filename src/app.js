@@ -7,6 +7,7 @@ const bodyParser=require("body-parser");
 const morgan=require("morgan");
 const JSON=require("JSON");
 const { accountSchema } = require("./model/account.js");
+const { ObjectID, default: BSON } = require("bson");
 const User=require("./model/user.js").User;
 const AccountSchema=require("./model/account.js").accountSchema;
 require('dotenv').config();
@@ -206,6 +207,16 @@ app.get("/isValid/AccountNo/:accountID",(req,res)=>{
             }
         }
         res.status(401).send("account id is not found")
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+});
+app.get("/users/Accounts/:accountID",(req,res)=>{
+    const filter={"Accounts._id":BSON.ObjectID(req.params.accountID)}
+    User.find(filter)
+    .then((result)=>{
+        res.status(200).send(JSON.stringify(result));
     })
     .catch((err)=>{
         console.log(err);
