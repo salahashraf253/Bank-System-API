@@ -169,7 +169,7 @@ function getUpdataUserWithNewBalance(user,accountId,newBalance){
     }
 }
 //update balance
-app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
+app.patch('/update-Balance/:userSSN/:accountID/:userSSN2/:accountID2',(req,res)=>{
     try{
         const accountId=req.params.accountID;
         const userSSN=req.params.userSSN;
@@ -189,6 +189,25 @@ app.patch('/update-Balance/:userSSN/:accountID',(req,res)=>{
                 res.status(404).send("Account or User is not found");
             }
         })
+        const accountId2=req.params.accountID2;
+        const userSSN2=req.params.userSSN2;
+        const filter2={SSN: userSSN2};    
+        // console.log(userSSN,accountId);
+        User.findOne(filter2)
+        .then((result)=>{
+            if(result){
+                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId2,req.body.Balance);
+                User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
+                    res.status(200).send("Done");
+                }).catch((err)=>{
+                    console.log(err);
+                });
+            }
+            else{
+                res.status(404).send("Account or User is not found");
+            }
+        })
+
     }
     catch(err){
         console.log(err);
@@ -214,9 +233,10 @@ app.get("/isValid/AccountNo/:accountID",(req,res)=>{
 });
 app.get("/users/Accounts/:accountID",(req,res)=>{
     const filter={"Accounts._id":BSON.ObjectID(req.params.accountID)}
-    User.find(filter)
+    User.findOne(filter)
     .then((result)=>{
-        res.status(200).send(JSON.stringify(result));
+        const userToSend=new User(result);
+        res.status(200).send(JSON.stringify(userToSend));
     })
     .catch((err)=>{
         console.log(err);
