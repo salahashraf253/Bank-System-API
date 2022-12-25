@@ -179,11 +179,7 @@ app.patch('/update-Balance/:userSSN/:accountID/:userSSN2/:accountID2',(req,res)=
         .then((result)=>{
             if(result){
                 let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId,req.body.Balance);
-                User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
-                    res.status(200).send("Done");
-                }).catch((err)=>{
-                    console.log(err);
-                });
+                User.updateOne(filter,{$set: userToUpdate});
             }
             else{
                 res.status(404).send("Account or User is not found");
@@ -196,7 +192,7 @@ app.patch('/update-Balance/:userSSN/:accountID/:userSSN2/:accountID2',(req,res)=
         User.findOne(filter2)
         .then((result)=>{
             if(result){
-                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId2,req.body.Balance);
+                let userToUpdate=getUpdataUserWithNewBalance(new User(result),accountId2,req.body.Balance2);
                 User.updateOne(filter,{$set: userToUpdate}).then((result)=>{
                     res.status(200).send("Done");
                 }).catch((err)=>{
