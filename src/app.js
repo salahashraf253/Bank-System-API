@@ -214,7 +214,7 @@ app.get("/isValid/AccountNo/:accountID",(req,res)=>{
 });
 app.get("/users/Accounts/:accountID",(req,res)=>{
     const filter={"Accounts._id":BSON.ObjectID(req.params.accountID)}
-    User.find(filter)
+    User.findOne(filter)
     .then((result)=>{
         res.status(200).send(JSON.stringify(result));
     })
