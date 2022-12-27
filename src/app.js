@@ -121,18 +121,18 @@ function getUpdatedAccountWithTransaction(accountToUpdate,transactionToAdd){
     acc.Transactions.addToSet(transactionToAdd);
     return acc;
 }
-function updateAccountsList(allUserAccounts, transactionToAdd,accountType){
+function updateAccountsList(allUserAccounts, transactionToAdd,accountID){
     for(var i=0;i<allUserAccounts.length;i++){
-        if(allUserAccounts[i].Type==accountType){
+        if(allUserAccounts[i]._id==accountID){
             allUserAccounts[i]=getUpdatedAccountWithTransaction(allUserAccounts[i],transactionToAdd);
             return allUserAccounts;
         }
     }
 }
 //add transaction for a account
-app.post('/add-transaction/:userSSN/:accountType',(req,res)=>{
+app.post('/add/transaction/:userSSN/:accountID',(req,res)=>{
     const ssn=req.params.userSSN;
-    const accountType=req.params.accountType;
+    const accountID=req.params.accountID;
     // const transactionModel=model("transactionModel",Transaction);
     const transactionToAdd=req.body;
     try {
@@ -140,7 +140,7 @@ app.post('/add-transaction/:userSSN/:accountType',(req,res)=>{
         User.findOne( filter)
         .then((result)=>{
             if(result){
-                let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountType);
+                let allUserAccounts=updateAccountsList(result.Accounts,transactionToAdd,accountID);
                 const updatedUser={
                     SSN:ssn,
                     Accounts:allUserAccounts
